@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardware Support Matrix — IT Reference</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-hover: #334155;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --green: #16a34a;
+    --green-bg: rgba(22,163,74,0.12);
+    --red: #dc2626;
+    --red-bg: rgba(220,38,38,0.10);
+    --yellow: #ca8a04;
+    --yellow-bg: rgba(202,138,4,0.10);
+    --header-bg: #1e3a5f;
+    --make-bg: #2563eb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .page-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2rem 1.5rem;
+  }
+  .page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .page-header .subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .control-group label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  select, input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  select:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+  input[type="text"] { width: 220px; }
+  .btn-reset {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-reset:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* Legend bar */
+  .legend-bar {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.6rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .legend-dot.green { background: var(--green); }
+  .legend-dot.red { background: var(--red); }
+  .legend-dot.yellow { background: var(--yellow); }
+
+  /* Table container */
+  .table-wrap {
+    overflow-x: auto;
+    padding: 0 1rem 2rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.84rem;
+  }
+  thead th {
+    background: var(--header-bg);
+    color: #fff;
+    padding: 0.7rem 0.6rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    border-bottom: 2px solid var(--accent);
+  }
+  thead th:hover { background: #2a5080; }
+  thead th .sort-arrow { margin-left: 4px; opacity: 0.4; font-size: 0.7rem; }
+  thead th.sorted .sort-arrow { opacity: 1; color: #60a5fa; }
+
+  /* Make group header row */
+  tr.make-header td {
+    background: var(--make-bg);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.55rem 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Data rows */
+  tbody tr.data-row {
+    transition: background 0.12s;
+  }
+  tbody tr.data-row:hover {
+    filter: brightness(1.15);
+  }
+  tbody tr.data-row td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    vertical-align: top;
+  }
+
+  /* Row status colors */
+  tr.status-recommended { background: var(--green-bg); }
+  tr.status-recommended td:first-child { border-left: 3px solid var(--green); }
+  tr.status-not-recommended { background: var(--red-bg); }
+  tr.status-not-recommended td:first-child { border-left: 3px solid var(--red); }
+  tr.status-caution { background: var(--yellow-bg); }
+  tr.status-caution td:first-child { border-left: 3px solid var(--yellow); }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-green { background: rgba(22,163,74,0.25); color: #4ade80; }
+  .badge-red { background: rgba(220,38,38,0.25); color: #f87171; }
+  .badge-yellow { background: rgba(202,138,4,0.25); color: #facc15; }
+  .badge-blue { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .badge-gray { background: rgba(148,163,184,0.2); color: #94a3b8; }
+
+  /* Score bars */
+  .score-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .score-bar-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 50px;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  /* Recommendation cell */
+  .rec-text {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  /* RAM column */
+  .ram-yes { color: #4ade80; font-weight: 600; }
+  .ram-no { color: #f87171; font-weight: 600; }
+  .ram-partial { color: #fb923c; font-weight: 600; }
+
+  /* Model name */
+  .model-name { font-weight: 600; color: #e2e8f0; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .page-header, .stats-bar, .controls, .legend-bar { padding-left: 1rem; padding-right: 1rem; }
+  }
+
+  /* Segment badges */
+  .seg-home { background: rgba(148,163,184,0.2); color: #94a3b8; }
+  .seg-smb { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .seg-business { background: rgba(22,163,74,0.2); color: #4ade80; }
+  .seg-enterprise { background: rgba(168,85,247,0.2); color: #c084fc; }
+
+  /* Count badge in stats */
+  .count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0 6px;
+  }
+
+  /* Price range */
+  .price-range {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+  .no-results td { border: none !important; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Standard Laptop Support Matrix</h1>
+  <div class="subtitle">IT Reference — March 2026 &middot; Traxler Consulting</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><span class="stat-value" id="stat-total">40</span><span class="stat-label">Models</span></div>
+  <div class="stat"><span class="stat-value" id="stat-makes">5</span><span class="stat-label">Makes</span></div>
+  <div class="stat"><span class="stat-value count-badge badge-green" id="stat-rec">0</span><span class="stat-label">Recommended</span></div>
+  <div class="stat"><span class="stat-value count-badge badge-yellow" id="stat-cau">0</span><span class="stat-label">Caution</span></div>
+  <div class="stat"><span class="stat-value count-badge badge-red" id="stat-nr">0</span><span class="stat-label">Not Recommended</span></div>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Make</label>
+    <select id="filterMake"><option value="">All Makes</option></select>
+  </div>
+  <div class="control-group">
+    <label>Segment</label>
+    <select id="filterSegment"><option value="">All Segments</option></select>
+  </div>
+  <div class="control-group">
+    <label>Status</label>
+    <select id="filterStatus">
+      <option value="">All</option>
+      <option value="recommended">Recommended</option>
+      <option value="caution">Caution</option>
+      <option value="not-recommended">Not Recommended</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>RAM</label>
+    <select id="filterRAM">
+      <option value="">Any</option>
+      <option value="Yes">Upgradeable</option>
+      <option value="No">Soldered</option>
+      <option value="Partial">Partial</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Search</label>
+    <input type="text" id="searchBox" placeholder="Model, processor, GPU...">
+  </div>
+  <button class="btn-reset" onclick="resetFilters()">Reset</button>
+</div>
+
+<div class="legend-bar">
+  <div class="legend-item"><span class="legend-dot green"></span> Recommended for business IT</div>
+  <div class="legend-item"><span class="legend-dot yellow"></span> Caution — evaluate case-by-case</div>
+  <div class="legend-item"><span class="legend-dot red"></span> Not Recommended — consumer grade / poor fleet support</div>
+</div>
+
+<div class="table-wrap">
+<table id="matrixTable">
+  <thead>
+    <tr>
+      <th data-col="make">Make <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="model">Model / Line <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="segment">Segment <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="processor">Processor <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="gpu">GPU <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="priceLow">Price Low <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="priceHigh">Price High <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="ram">RAM Upgradeable <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="performance">Performance <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="longevity">Longevity <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="supportability">Supportability <span class="sort-arrow">&#9650;</span></th>
+      <th data-col="recommendation">IT Recommendation <span class="sort-arrow">&#9650;</span></th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+</div>
+
+<script>
+const DATA = [
+  {make:"Apple",model:'MacBook Air 13" (M1/M2/M3)',segment:"Home / SMB",processorFamily:"Apple Silicon M-Series",processorDetails:"M1/M2/M3 – 8-core CPU, up to 10-core GPU; unified memory",gpu:"Integrated (M-series GPU 7–10 cores)",priceLow:"$1,099",priceHigh:"$1,499",ram:"No",performance:8,longevity:"5–6 yrs",supportability:6,status:"caution",recommendation:"Great hardware; MDM/IT tooling gaps in mixed Windows orgs"},
+  {make:"Apple",model:'MacBook Air 15" (M2/M3)',segment:"Home / SMB",processorFamily:"Apple Silicon M-Series",processorDetails:"M2/M3 – 8-core CPU, 10-core GPU; larger display adds ~$200 over 13\"",gpu:"Integrated (M-series GPU 10 cores)",priceLow:"$1,299",priceHigh:"$1,699",ram:"No",performance:8,longevity:"5–6 yrs",supportability:6,status:"caution",recommendation:"Same chip as 13\"; cost premium is purely screen size; still no MDM parity in Windows orgs"},
+  {make:"Apple",model:'MacBook Pro 14" (M3/M3 Pro/Max)',segment:"Business / Enterprise",processorFamily:"Apple Silicon M3 Pro / Max",processorDetails:"M3 Pro: 11-core CPU; M3 Max: 16-core CPU; up to 128 GB unified RAM",gpu:"Integrated (M3 Pro 18-core / M3 Max 40-core GPU)",priceLow:"$1,999",priceHigh:"$3,499",ram:"No",performance:10,longevity:"6–7 yrs",supportability:7,status:"recommended",recommendation:"Best-in-class perf & battery; better suited for macOS-first orgs"},
+  {make:"Apple",model:'MacBook Pro 16" (M3/M3 Pro/Max)',segment:"Business / Enterprise",processorFamily:"Apple Silicon M3 Pro / Max",processorDetails:"Same chip options as 14\"; larger display & better speakers add $200–$400 premium",gpu:"Integrated (M3 Pro 18-core / M3 Max 40-core GPU)",priceLow:"$2,499",priceHigh:"$3,999",ram:"No",performance:10,longevity:"6–7 yrs",supportability:7,status:"recommended",recommendation:"Larger screen for power users; note the cost jump vs 14\" for display size alone"},
+  {make:"Apple",model:'MacBook Pro 13" (Intel, 2019–2022)',segment:"Home / SMB",processorFamily:"Intel Core i5/i7 (10th Gen)",processorDetails:"Dual-core i5/i7, Turbo up to 3.8 GHz; 8–16 GB LPDDR4X",gpu:"Intel Iris Plus integrated",priceLow:"$899",priceHigh:"$1,499",ram:"No",performance:5,longevity:"3–4 yrs",supportability:5,status:"not-recommended",recommendation:"Legacy Intel; approaching end of useful lifecycle"},
+  {make:"Dell",model:'Inspiron 14" (5000 Series)',segment:"Home User",processorFamily:"Intel Core i5/i7 12th–13th Gen / AMD Ryzen 5/7",processorDetails:"i5-1235U to i7-1355U; Ryzen 5 7530U – Ryzen 7 7730U; DDR4",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$549",priceHigh:"$1,099",ram:"No",performance:5,longevity:"3–4 yrs",supportability:7,status:"not-recommended",recommendation:"Consumer grade; limited warranty/support options for business IT"},
+  {make:"Dell",model:'Inspiron 16" (5625/5630)',segment:"Home User",processorFamily:"Intel Core i7 12th–13th Gen / AMD Ryzen 7",processorDetails:"i7-1255U / Ryzen 7 7730U; DDR4; ~$100–150 more than 14\" config",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$649",priceHigh:"$1,199",ram:"No",performance:5,longevity:"3–4 yrs",supportability:7,status:"not-recommended",recommendation:"Larger screen adds cost with no business benefit; still consumer grade"},
+  {make:"Dell",model:'Latitude 5440 (14")',segment:"SMB / Business",processorFamily:"Intel Core i5/i7 12th–13th Gen vPro",processorDetails:"i5-1345U / i7-1365U vPro; up to 32 GB DDR5; optional 4G/5G WWAN",gpu:"Intel Iris Xe; optional MX550 dGPU",priceLow:"$1,049",priceHigh:"$1,799",ram:"Yes",performance:7,longevity:"4–5 yrs",supportability:9,status:"recommended",recommendation:"Solid mid-range business; great BIOS mgmt & Dell ProSupport"},
+  {make:"Dell",model:'Latitude 5540 (15.6")',segment:"SMB / Business",processorFamily:"Intel Core i5/i7 12th–13th Gen vPro",processorDetails:"Same CPU options as 5440; larger chassis adds ~$50–100; DDR5",gpu:"Intel Iris Xe; optional MX550 dGPU",priceLow:"$1,099",priceHigh:"$1,849",ram:"Yes",performance:7,longevity:"4–5 yrs",supportability:9,status:"recommended",recommendation:"Good choice when screen real estate matters; minimal cost premium over 14\""},
+  {make:"Dell",model:'Latitude 7440 (14")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7/i9 13th Gen vPro",processorDetails:"i5-1345U to i9-1395H vPro; LPDDR5; optional 5G WWAN",gpu:"Intel Iris Xe / Intel Arc A370M (optional)",priceLow:"$1,449",priceHigh:"$2,499",ram:"No",performance:8,longevity:"5–6 yrs",supportability:10,status:"recommended",recommendation:"Best-in-class IT manageability; Dell ProSupport+; MIL-SPEC 810H"},
+  {make:"Dell",model:'Latitude 7640 (16")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7/i9 13th Gen vPro",processorDetails:"Same CPU lineup as 7440; 16\" IPS adds $150–300 premium; LPDDR5",gpu:"Intel Iris Xe / Intel Arc A370M (optional)",priceLow:"$1,649",priceHigh:"$2,799",ram:"No",performance:8,longevity:"5–6 yrs",supportability:10,status:"recommended",recommendation:"Larger screen for power users; cost delta is reasonable at enterprise pricing"},
+  {make:"Dell",model:'XPS 13" (9315/9320)',segment:"Home / SMB",processorFamily:"Intel Core i5/i7 12th–13th Gen",processorDetails:"i5-1230U to i7-1360P; LPDDR5; thin & light",gpu:"Intel Iris Xe integrated",priceLow:"$999",priceHigh:"$1,799",ram:"No",performance:7,longevity:"4–5 yrs",supportability:6,status:"caution",recommendation:"Great specs; consumer warranty; RAM/SSD soldered and non-serviceable"},
+  {make:"Dell",model:'XPS 15" (9510/9520)',segment:"Home / SMB",processorFamily:"Intel Core i7/i9 12th–13th Gen",processorDetails:"i7-12700H to i9-13900H; DDR5; adds $300–500 over XPS 13",gpu:"Intel Iris Xe / NVIDIA RTX 4060",priceLow:"$1,299",priceHigh:"$2,499",ram:"Partial",performance:8,longevity:"4–5 yrs",supportability:6,status:"caution",recommendation:"SSD upgradeable; RAM soldered on most configs; cost jump notable vs XPS 13"},
+  {make:"Dell",model:'Precision 3470/3480 (14")',segment:"Business / Enterprise",processorFamily:"Intel Core i7/i9 / Xeon W 13th Gen",processorDetails:"i7-13700H to Xeon W-11955M; ECC RAM support; ISV certified",gpu:"NVIDIA RTX A500 – A2000",priceLow:"$1,699",priceHigh:"$3,499",ram:"Yes",performance:9,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"ISV-certified; ideal for engineering/creative enterprise users"},
+  {make:"Dell",model:'Precision 5680 (16")',segment:"Business / Enterprise",processorFamily:"Intel Core i7/i9 / Xeon W 13th Gen",processorDetails:"i9-13950HX / Xeon W; up to 64 GB DDR5; larger chassis = better thermals; adds ~$300–500",gpu:"NVIDIA RTX A2000 / A3000 / A4500",priceLow:"$2,199",priceHigh:"$4,499",ram:"Yes",performance:10,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"Best Dell mobile workstation; larger display worth premium for CAD/AEC work"},
+  {make:"HP",model:'Pavilion 14"',segment:"Home User",processorFamily:"Intel Core i5/i7 12th Gen / AMD Ryzen 5/7",processorDetails:"i5-1235U / Ryzen 7 7730U; DDR4; entry consumer",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$499",priceHigh:"$949",ram:"No",performance:4,longevity:"3–4 yrs",supportability:6,status:"not-recommended",recommendation:"Consumer-class; HP support tiers not suited for business IT"},
+  {make:"HP",model:'Pavilion 16"',segment:"Home User",processorFamily:"Intel Core i5/i7 12th Gen / AMD Ryzen 5/7",processorDetails:"Same CPUs as 14\"; 16\" adds ~$80–120; still entry consumer",gpu:"Intel Iris Xe / AMD Radeon / NVIDIA RTX 3050",priceLow:"$579",priceHigh:"$1,049",ram:"No",performance:5,longevity:"3–4 yrs",supportability:6,status:"not-recommended",recommendation:"Larger screen adds cost; still consumer grade with no business support path"},
+  {make:"HP",model:'EliteBook 840 G9/G10 (14")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7 12th–13th Gen vPro",processorDetails:"i5-1245U to i7-1365U vPro; LPDDR5; optional 4G/5G; MIL-SPEC 810H",gpu:"Intel Iris Xe; optional NVIDIA RTX 2050",priceLow:"$1,249",priceHigh:"$2,199",ram:"No",performance:7,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"HP's top business line; Wolf Security + HP Sure; excellent IT management"},
+  {make:"HP",model:'EliteBook 860 G10 (16")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7 13th Gen vPro",processorDetails:"Same vPro CPU options; 16\" display adds ~$150–250 over 840; LPDDR5",gpu:"Intel Iris Xe; optional NVIDIA RTX 2050",priceLow:"$1,449",priceHigh:"$2,449",ram:"No",performance:7,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"Good choice when users need larger screen; manageable cost premium over 840"},
+  {make:"HP",model:'ProBook 440 G9/G10 (14")',segment:"SMB / Entry Business",processorFamily:"Intel Core i5/i7 12th–13th Gen",processorDetails:"i5-1235U to i7-1355U; DDR4/DDR5; MIL-SPEC 810H rated",gpu:"Intel Iris Xe integrated",priceLow:"$849",priceHigh:"$1,449",ram:"Yes",performance:6,longevity:"4–5 yrs",supportability:8,status:"recommended",recommendation:"Best value in HP's SMB lineup; solid manageability, good warranty options"},
+  {make:"HP",model:'ProBook 460 G10 (16")',segment:"SMB / Entry Business",processorFamily:"Intel Core i5/i7 13th Gen",processorDetails:"Same CPU options; 16\" adds ~$100 over 440; DDR4/DDR5",gpu:"Intel Iris Xe integrated",priceLow:"$949",priceHigh:"$1,549",ram:"Yes",performance:6,longevity:"4–5 yrs",supportability:8,status:"recommended",recommendation:"Affordable 16\" option for users who need more screen; slight cost bump is justified"},
+  {make:"HP",model:'ZBook Firefly 14 G10',segment:"Business / Enterprise",processorFamily:"Intel Core i7/i9 13th Gen vPro",processorDetails:"i7-1360P to i9-13900H; up to 64 GB DDR5; ISV certified",gpu:"NVIDIA RTX A500 / A1000 / A2000",priceLow:"$1,649",priceHigh:"$3,499",ram:"Yes",performance:9,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"Mobile workstation; enterprise manageability + dedicated workstation GPU"},
+  {make:"HP",model:'ZBook Firefly 16 G10',segment:"Business / Enterprise",processorFamily:"Intel Core i7/i9 13th Gen vPro",processorDetails:"Same CPU/GPU options as 14\"; 16\" WUXGA display adds ~$200–350 premium; better thermals",gpu:"NVIDIA RTX A500 / A1000 / A2000",priceLow:"$1,849",priceHigh:"$3,799",ram:"Yes",performance:9,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"Larger screen worth it for detailed CAD/creative work; still fully enterprise managed"},
+  {make:"HP",model:'Spectre x360 14"',segment:"Home / SMB",processorFamily:"Intel Core i7/i9 13th Gen Evo",processorDetails:"i7-1355U to i9-13900H; LPDDR5; 2-in-1 convertible",gpu:"Intel Iris Xe / Intel Arc A370M",priceLow:"$1,299",priceHigh:"$2,199",ram:"No",performance:7,longevity:"4–5 yrs",supportability:6,status:"caution",recommendation:"Premium consumer 2-in-1; limited business warranty without upgrade"},
+  {make:"Lenovo",model:'IdeaPad 5 (14")',segment:"Home User",processorFamily:"Intel Core i5/i7 12th Gen / AMD Ryzen 5/7",processorDetails:"i5-1235U / Ryzen 7 5700U; DDR4; consumer grade",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$449",priceHigh:"$949",ram:"No",performance:4,longevity:"3–4 yrs",supportability:6,status:"not-recommended",recommendation:"Entry consumer; poor repairability, consumer-tier support"},
+  {make:"Lenovo",model:'IdeaPad 5 (16")',segment:"Home User",processorFamily:"Intel Core i5/i7 12th Gen / AMD Ryzen 5/7",processorDetails:"Same CPUs as 14\"; 16\" IPS adds ~$80–120; still consumer",gpu:"Intel Iris Xe / AMD Radeon / NVIDIA RTX 3050",priceLow:"$529",priceHigh:"$1,049",ram:"No",performance:5,longevity:"3–4 yrs",supportability:6,status:"not-recommended",recommendation:"Bigger screen, same consumer limitations; adds cost without adding business value"},
+  {make:"Lenovo",model:'ThinkPad E14 Gen 4/5',segment:"Entry SMB",processorFamily:"Intel Core i5/i7 12th–13th Gen / AMD Ryzen",processorDetails:"i5-1235U to i7-1355U / Ryzen 7 7730U; DDR4",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$799",priceHigh:"$1,349",ram:"Yes",performance:6,longevity:"4–5 yrs",supportability:8,status:"recommended",recommendation:"Entry ThinkPad; strong SMB value; keyboard + repairability above consumer class"},
+  {make:"Lenovo",model:'ThinkPad E16 Gen 1/2',segment:"Entry SMB",processorFamily:"Intel Core i5/i7 13th Gen / AMD Ryzen 7",processorDetails:"i5-1335U to i7-1355U / Ryzen 7 7730U; DDR4; adds ~$100 over E14",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$899",priceHigh:"$1,449",ram:"Yes",performance:6,longevity:"4–5 yrs",supportability:8,status:"recommended",recommendation:"16\" entry ThinkPad; modest premium over E14; good for users needing more screen"},
+  {make:"Lenovo",model:'ThinkPad L14 Gen 3/4 (14")',segment:"SMB / Business",processorFamily:"Intel Core i5/i7 12th–13th Gen vPro / AMD Pro",processorDetails:"i5-1245U to i7-1365U vPro / Ryzen Pro 7730U; DDR4",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$899",priceHigh:"$1,549",ram:"Yes",performance:6,longevity:"4–5 yrs",supportability:9,status:"recommended",recommendation:"Affordable vPro; Lenovo Premier Support available; MIL-SPEC rated"},
+  {make:"Lenovo",model:'ThinkPad L16 Gen 1 (16")',segment:"SMB / Business",processorFamily:"Intel Core i5/i7 13th Gen vPro / AMD Pro",processorDetails:"i5-1335U to i7-1365U vPro / Ryzen Pro; adds ~$100–150 over L14; DDR4",gpu:"Intel Iris Xe / AMD Radeon integrated",priceLow:"$999",priceHigh:"$1,649",ram:"Yes",performance:6,longevity:"4–5 yrs",supportability:9,status:"recommended",recommendation:"16\" vPro option at still-reasonable SMB price; good step-up from L14"},
+  {make:"Lenovo",model:'ThinkPad T14 Gen 3/4 (14")',segment:"Business",processorFamily:"Intel Core i5/i7 13th Gen vPro / AMD Ryzen Pro",processorDetails:"i5-1345U to i7-1365U vPro / Ryzen 7 Pro 7840U; LPDDR5",gpu:"Intel Iris Xe / AMD Radeon 780M integrated",priceLow:"$1,099",priceHigh:"$1,899",ram:"Yes",performance:7,longevity:"5–6 yrs",supportability:10,status:"recommended",recommendation:"Gold standard for business IT; vPro, superb keyboard, best repairability"},
+  {make:"Lenovo",model:'ThinkPad T16 Gen 1/2 (16")',segment:"Business",processorFamily:"Intel Core i5/i7 13th Gen vPro / AMD Ryzen Pro",processorDetails:"Same CPU options as T14; 16\" IPS adds ~$100–200; DDR5",gpu:"Intel Iris Xe / AMD Radeon 780M integrated",priceLow:"$1,199",priceHigh:"$2,099",ram:"Yes",performance:7,longevity:"5–6 yrs",supportability:10,status:"recommended",recommendation:"Best 16\" business laptop value; great for users migrating from 15\" laptops"},
+  {make:"Lenovo",model:'ThinkPad X1 Carbon Gen 11/12 (14")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7 13th Gen vPro EVO",processorDetails:"i5-1345U to i7-1365U vPro EVO; LPDDR5 5200; ultra-light (~1 kg)",gpu:"Intel Iris Xe integrated",priceLow:"$1,499",priceHigh:"$2,799",ram:"No",performance:7,longevity:"5–6 yrs",supportability:10,status:"recommended",recommendation:"Best enterprise ultrabook; MIL-SPEC, 3-yr Premier Support standard"},
+  {make:"Lenovo",model:'ThinkPad P14s Gen 3 (14")',segment:"Business / Enterprise",processorFamily:"Intel Core i7/i9 / AMD Ryzen Pro 13th Gen",processorDetails:"i7-1360P to i9-13950HX / Ryzen 9 Pro; up to 64 GB; ISV certified",gpu:"NVIDIA RTX A500 / A1000",priceLow:"$1,549",priceHigh:"$3,299",ram:"Yes",performance:9,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"ISV-certified 14\" mobile workstation; excellent for CAD/AEC field users"},
+  {make:"Lenovo",model:'ThinkPad P16 Gen 1/2 (16")',segment:"Business / Enterprise",processorFamily:"Intel Core i7/i9 HX / AMD Ryzen Pro",processorDetails:"i7-12800HX to i9-13980HX; up to 128 GB DDR5; adds $400–600 over P14s; full workstation",gpu:"NVIDIA RTX A2000 / A3000 / A4500 / A5500",priceLow:"$2,099",priceHigh:"$4,999",ram:"Yes",performance:10,longevity:"5–6 yrs",supportability:9,status:"recommended",recommendation:"Top-tier mobile workstation; 16\" display + higher-end GPU worth premium for power users"},
+  {make:"Microsoft",model:'Surface Laptop 5 (13.5")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7 12th Gen Evo",processorDetails:"i5-1245U to i7-1265U; LPDDR5x; fanless i5 / active-cooled i7",gpu:"Intel Iris Xe integrated",priceLow:"$999",priceHigh:"$1,999",ram:"No",performance:6,longevity:"4–5 yrs",supportability:8,status:"recommended",recommendation:"Excellent Autopilot + Intune integration; great for MS-centric orgs"},
+  {make:"Microsoft",model:'Surface Laptop 5 (15")',segment:"Business / Enterprise",processorFamily:"Intel Core i7 12th Gen Evo",processorDetails:"i7-1265U; LPDDR5x; 15\" PixelSense adds ~$200–300 over 13.5\"",gpu:"Intel Iris Xe integrated",priceLow:"$1,299",priceHigh:"$2,199",ram:"No",performance:6,longevity:"4–5 yrs",supportability:8,status:"recommended",recommendation:"Larger screen option; cost premium modest; same enterprise manageability"},
+  {make:"Microsoft",model:'Surface Pro 9 / 10 (13")',segment:"Business / Enterprise",processorFamily:"Intel Core i5/i7 12th Gen / Qualcomm SQ3",processorDetails:"i5-1245U to i7-1265U / SQ3 ARM; LPDDR5x; 2-in-1 tablet",gpu:"Intel Iris Xe / Adreno (ARM)",priceLow:"$1,299",priceHigh:"$2,499",ram:"No",performance:6,longevity:"4–5 yrs",supportability:7,status:"caution",recommendation:"ARM version has app compat gaps; Intel version solid for MS 365 orgs; repair costs high"},
+  {make:"Microsoft",model:'Surface Laptop Go 3 (12.4")',segment:"SMB / Entry Business",processorFamily:"Intel Core i5 12th Gen",processorDetails:"i5-1235U; max 16 GB LPDDR5x; lightweight task-worker device",gpu:"Intel Iris Xe integrated",priceLow:"$799",priceHigh:"$1,099",ram:"No",performance:5,longevity:"3–4 yrs",supportability:7,status:"caution",recommendation:"RAM capped at 16 GB; not for power users; good for frontline/task-worker deployments"},
+  {make:"Microsoft",model:'Surface Laptop Studio 2 (14.4")',segment:"Business / Enterprise",processorFamily:"Intel Core i7 H35 13th Gen",processorDetails:"i7-13700H; up to 64 GB DDR5; unique Studio hinge form factor",gpu:"NVIDIA RTX 4050 / 4060",priceLow:"$1,999",priceHigh:"$3,499",ram:"No",performance:9,longevity:"4–5 yrs",supportability:7,status:"caution",recommendation:"Powerful but pricey; niche form factor; limited IT repair options"}
+];
+
+// Populate filter dropdowns
+const makes = [...new Set(DATA.map(d => d.make))];
+const segments = [...new Set(DATA.map(d => d.segment))];
+const filterMake = document.getElementById('filterMake');
+const filterSegment = document.getElementById('filterSegment');
+const filterStatus = document.getElementById('filterStatus');
+const filterRAM = document.getElementById('filterRAM');
+const searchBox = document.getElementById('searchBox');
+
+makes.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; filterMake.appendChild(o); });
+segments.sort().forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; filterSegment.appendChild(o); });
+
+let sortCol = null, sortAsc = true;
+
+function parsePrice(p) {
+  return parseInt(p.replace(/[$,]/g, ''), 10) || 0;
+}
+
+function getFiltered() {
+  let rows = [...DATA];
+  const mk = filterMake.value;
+  const seg = filterSegment.value;
+  const st = filterStatus.value;
+  const rm = filterRAM.value;
+  const q = searchBox.value.toLowerCase().trim();
+
+  if (mk) rows = rows.filter(r => r.make === mk);
+  if (seg) rows = rows.filter(r => r.segment === seg);
+  if (st) rows = rows.filter(r => r.status === st);
+  if (rm) rows = rows.filter(r => r.ram === rm);
+  if (q) rows = rows.filter(r =>
+    (r.model + r.processorFamily + r.processorDetails + r.gpu + r.make + r.recommendation).toLowerCase().includes(q)
+  );
+
+  if (sortCol) {
+    rows.sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (sortCol === 'priceLow' || sortCol === 'priceHigh') { va = parsePrice(va); vb = parsePrice(vb); }
+      if (typeof va === 'number') return sortAsc ? va - vb : vb - va;
+      va = String(va); vb = String(vb);
+      return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+  }
+  return rows;
+}
+
+function scoreColor(val, max) {
+  if (val >= max * 0.8) return '#4ade80';
+  if (val >= max * 0.6) return '#facc15';
+  return '#f87171';
+}
+
+function segClass(seg) {
+  const s = seg.toLowerCase();
+  if (s.includes('enterprise')) return 'seg-enterprise';
+  if (s.includes('business') && !s.includes('entry')) return 'seg-business';
+  if (s.includes('smb') || s.includes('entry')) return 'seg-smb';
+  return 'seg-home';
+}
+
+function statusIcon(st) {
+  if (st === 'recommended') return '<span style="color:#4ade80">&#x2705;</span>';
+  if (st === 'not-recommended') return '<span style="color:#f87171">&#x26D4;</span>';
+  return '<span style="color:#facc15">&#x26A0;&#xFE0F;</span>';
+}
+
+function ramHTML(ram) {
+  if (ram === 'Yes') return '<span class="ram-yes">Yes</span>';
+  if (ram === 'No') return '<span class="ram-no">No</span>';
+  return '<span class="ram-partial">Partial</span>';
+}
+
+function renderScoreBar(val, max, color) {
+  const pct = (val / max) * 100;
+  return `<div class="score-bar">
+    <span style="font-weight:600;min-width:18px">${val}</span>
+    <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+  </div>`;
+}
+
+function render() {
+  const rows = getFiltered();
+  const tbody = document.getElementById('tableBody');
+  let html = '';
+  let lastMake = '';
+
+  // Update stats
+  const rec = rows.filter(r => r.status === 'recommended').length;
+  const cau = rows.filter(r => r.status === 'caution').length;
+  const nr = rows.filter(r => r.status === 'not-recommended').length;
+  const mkSet = new Set(rows.map(r => r.make));
+  document.getElementById('stat-total').textContent = rows.length;
+  document.getElementById('stat-makes').textContent = mkSet.size;
+  document.getElementById('stat-rec').textContent = rec;
+  document.getElementById('stat-cau').textContent = cau;
+  document.getElementById('stat-nr').textContent = nr;
+
+  if (rows.length === 0) {
+    html = '<tr class="no-results"><td colspan="12">No models match your filters.</td></tr>';
+    tbody.innerHTML = html;
+    return;
+  }
+
+  rows.forEach(r => {
+    if (r.make !== lastMake && !sortCol) {
+      lastMake = r.make;
+      html += `<tr class="make-header"><td colspan="12">${r.make}</td></tr>`;
+    }
+    const statusClass = r.status === 'recommended' ? 'status-recommended' : r.status === 'not-recommended' ? 'status-not-recommended' : 'status-caution';
+    html += `<tr class="data-row ${statusClass}">
+      <td>${r.make}</td>
+      <td class="model-name">${r.model}</td>
+      <td><span class="badge ${segClass(r.segment)}">${r.segment}</span></td>
+      <td title="${r.processorDetails}">${r.processorFamily}</td>
+      <td>${r.gpu}</td>
+      <td class="price-range">${r.priceLow}</td>
+      <td class="price-range">${r.priceHigh}</td>
+      <td>${ramHTML(r.ram)}</td>
+      <td>${renderScoreBar(r.performance, 10, scoreColor(r.performance, 10))}</td>
+      <td>${r.longevity}</td>
+      <td>${renderScoreBar(r.supportability, 10, scoreColor(r.supportability, 10))}</td>
+      <td><span class="rec-text">${statusIcon(r.status)} ${r.recommendation}</span></td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// Sorting
+document.querySelectorAll('thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (!col) return;
+    if (sortCol === col) { sortAsc = !sortAsc; }
+    else { sortCol = col; sortAsc = true; }
+    document.querySelectorAll('thead th').forEach(t => {
+      t.classList.remove('sorted');
+      t.querySelector('.sort-arrow').innerHTML = '&#9650;';
+    });
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').innerHTML = sortAsc ? '&#9650;' : '&#9660;';
+    render();
+  });
+});
+
+// Filters
+[filterMake, filterSegment, filterStatus, filterRAM].forEach(el => el.addEventListener('change', render));
+searchBox.addEventListener('input', render);
+
+function resetFilters() {
+  filterMake.value = '';
+  filterSegment.value = '';
+  filterStatus.value = '';
+  filterRAM.value = '';
+  searchBox.value = '';
+  sortCol = null; sortAsc = true;
+  document.querySelectorAll('thead th').forEach(t => { t.classList.remove('sorted'); t.querySelector('.sort-arrow').innerHTML = '&#9650;'; });
+  render();
+}
+
+// Initial render
+render();
+</script>
+</body>
+</html>
